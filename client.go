@@ -117,3 +117,30 @@ func (resp *Response) ReadXML(out interface{}) error {
 	}
 	return xml.Unmarshal(content, out)
 }
+
+func (client *Client) SelectServer(opts *Opts) (selected *Server) {
+	if opts.Server != 0 {
+		servers, err := client.AllServers()
+		if err != nil {
+			log.Fatalf("Failed to load server list: %v\n", err)
+			return nil
+		}
+		selected = servers.Find(opts.Server)
+		if selected == nil {
+			log.Fatalf("Server not found: %d\n", opts.Server)
+			return nil
+		}
+		selected.MeasureLatency(DefaultLatencyMeasureTimes, DefaultErrorLatency)
+	} else {
+		servers, err := client.ClosestServers()
+		if err != nil {
+			log.Fatalf("Failed to load server list: %v\n", err)
+			return nil
+		}
+		selected = servers.MeasureLatencies(
+			DefaultLatencyMeasureTimes,
+			DefaultErrorLatency).First()
+	}
+
+	return selected
+}
