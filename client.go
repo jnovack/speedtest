@@ -82,7 +82,9 @@ func (client *Client) Get(url string) (resp *Response, err error) {
 	}
 
 	htResp, err := client.Client.Do(req)
-
+	if err != nil {
+		return nil, err
+	}
 	return (*Response)(htResp), err
 }
 
